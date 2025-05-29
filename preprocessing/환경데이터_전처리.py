@@ -29,7 +29,8 @@ EN_KR_MAP = {
     'Seocho-gu': '서초구',
     'Gangnam-gu': '강남구',
     'Songpa-gu': '송파구',
-    'Gangdong-gu': '강동구'
+    'Gangdong-gu': '강동구',
+    'Gangbuk-gu': '강북구',
 }
 
 df['자치구'] = df['자치구'].map(EN_KR_MAP)
