@@ -1,0 +1,42 @@
+k_optimal = 3
+kmeans_final = KMeans(n_clusters=k_optimal, init='k-means++', random_state=42)
+df_no_junggu['Cluster_final_no_junggu'] = kmeans_final.fit_predict(X_subset_no_junggu)
+
+# ✅ 클러스터별 자치구 출력
+for i in range(k_optimal):
+    cluster_members = df_no_junggu[df_no_junggu['Cluster_final_no_junggu'] == i]['자치구명'].tolist()
+    print(f'Cluster {i}: {cluster_members}')
+
+# ✅ 클러스터별 평균값
+print("\n중구 제외 클러스터별 평균값:")
+print(df_no_junggu.groupby('Cluster_final_no_junggu').mean(numeric_only=True))
+
+# ✅ PCA 시각화
+pca = PCA(n_components=2)
+X_pca = pca.fit_transform(X_subset_no_junggu)
+
+plt.figure(figsize=(8, 6))
+scatter = plt.scatter(X_pca[:, 0], X_pca[:, 1], c=df_no_junggu['Cluster_final_no_junggu'],
+                       cmap='tab10', s=50)
+plt.xlabel('PCA 1')
+plt.ylabel('PCA 2')
+plt.title('PCA 기반 클러스터링 (중구 제외)')
+plt.colorbar(scatter, ticks=range(k_optimal), label='Cluster')
+plt.show()
+
+# ✅ 클러스터별 평균 범죄밀도
+cluster_avg_crime = df_no_junggu.groupby('Cluster_final_no_junggu')['범죄밀도'].mean()
+plt.figure(figsize=(10, 6))
+sns.barplot(x=cluster_avg_crime.index, y=cluster_avg_crime.values, palette='Set2')
+plt.xlabel('클러스터')
+plt.ylabel('평균 범죄밀도')
+plt.title('중구 제외 후 클러스터별 평균 범죄밀도')
+plt.show()
+
+# ✅ 범죄밀도 분포 (Boxplot)
+plt.figure(figsize=(10, 6))
+sns.boxplot(x='Cluster_final_no_junggu', y='범죄밀도', data=df_no_junggu, palette='Set2')
+plt.xlabel('클러스터')
+plt.ylabel('범죄밀도')
+plt.title('중구 제외 후 클러스터별 범죄밀도 분포')
+plt.show()
