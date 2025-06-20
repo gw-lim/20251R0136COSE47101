@@ -1,0 +1,24 @@
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# ✅ 클러스터별 평균 범죄밀도 계산
+cluster_avg_crime = df.groupby('Cluster_final')['범죄밀도'].mean()
+print("클러스터별 평균 범죄밀도:")
+print(cluster_avg_crime)
+
+# ✅ 클러스터별 범죄밀도 시각화
+plt.figure(figsize=(10, 6))
+sns.barplot(x=cluster_avg_crime.index, y=cluster_avg_crime.values, palette='Set2')
+plt.xlabel('클러스터')
+plt.ylabel('평균 범죄밀도')
+plt.title('클러스터별 평균 범죄밀도 비교')
+plt.show()
+
+# ✅ 추가 분석: 클러스터별 범죄밀도 분포 확인
+plt.figure(figsize=(10, 6))
+sns.boxplot(x='Cluster_final', y='범죄밀도', data=df, palette='Set2')
+plt.xlabel('클러스터')
+plt.ylabel('범죄밀도')
+plt.title('클러스터별 범죄밀도 분포')
+plt.show()
