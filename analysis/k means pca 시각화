@@ -1,0 +1,19 @@
+import numpy as np
+from sklearn.decomposition import PCA
+
+# ✅ 클러스터별 평균값 계산
+cluster_avg = df.groupby('Cluster_final').mean(numeric_only=True)
+print("클러스터별 평균값:")
+print(cluster_avg)
+
+# ✅ PCA 기반 시각화
+pca = PCA(n_components=2)
+X_pca = pca.fit_transform(X_subset)
+
+plt.figure(figsize=(8, 6))
+scatter = plt.scatter(X_pca[:, 0], X_pca[:, 1], c=df['Cluster_final'], cmap='tab10', s=50)
+plt.xlabel('PCA 1')
+plt.ylabel('PCA 2')
+plt.title('PCA 기반 클러스터링 시각화')
+plt.colorbar(scatter, ticks=range(k_optimal), label='Cluster')
+plt.show()
