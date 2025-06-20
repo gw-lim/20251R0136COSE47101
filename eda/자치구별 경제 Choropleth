@@ -1,0 +1,65 @@
+import geopandas as gpd
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# 1️⃣ 자치구 경계 GeoJSON 불러오기
+geo_path = "C:\\Users\\LEE DONGYUN\\Desktop\\데과\\서울_자치구_경계_2017.geojson"
+gdf = gpd.read_file(geo_path, encoding='utf-8')
+
+# 2️⃣ 경제통합 데이터 불러오기
+df = pd.read_csv("C:\\Users\\LEE DONGYUN\\Desktop\\데과\\경제 통합.csv", encoding='euc-kr')
+
+# 4️⃣ 병합 (자치구 이름이 같으므로 정상 병합될 것)
+merged = gdf.merge(df, left_on='SIG_KOR_NM', right_on='자치구')
+
+# 5️⃣ Choropleth 지도 그리기
+fig, ax = plt.subplots(1, 1, figsize=(10, 10))
+
+merged.plot(column='월평균소득',
+             cmap='OrRd',
+             linewidth=0.8,
+             ax=ax,
+             edgecolor='0.8',
+             legend=True)
+
+plt.title('서울시 자치구별 월평균소득', fontsize=15)
+plt.axis('off')
+plt.show()
+
+fig, ax = plt.subplots(1, 1, figsize=(10, 10))
+
+merged.plot(column='지출총금액',
+             cmap='BuPu',      # ✅ 색상 팔레트 예시: BuPu
+             linewidth=0.8,
+             ax=ax,
+             edgecolor='0.8',
+             legend=True)
+
+plt.title('서울시 자치구별 년 지출총금액', fontsize=15)
+plt.axis('off')
+plt.show()
+
+fig, ax = plt.subplots(1, 1, figsize=(10, 10))
+
+merged.plot(column='GVA',
+             cmap='YlGnBu',    # 색상 팔레트 바꿔서 보기 편하도록 예시
+             linewidth=0.8,
+             ax=ax,
+             edgecolor='0.8',
+             legend=True)
+
+plt.title('서울시 자치구별 GVA', fontsize=15)
+plt.axis('off')
+plt.show()
+
+# ✅ 6️⃣ 1인당 GVA Choropleth
+fig, ax = plt.subplots(1, 1, figsize=(10, 10))
+merged.plot(column='1인당GVA',
+             cmap='PuRd',
+             linewidth=0.8,
+             ax=ax,
+             edgecolor='0.8',
+             legend=True)
+plt.title('서울시 자치구별 1인당 GVA', fontsize=15)
+plt.axis('off')
+plt.show()
