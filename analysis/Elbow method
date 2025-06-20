@@ -1,0 +1,35 @@
+import pandas as pd
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+
+# ✅ 한글 폰트 설정
+mpl.rc('font', family='Malgun Gothic')
+mpl.rc('axes', unicode_minus=False)
+
+# 파일 경로
+df = pd.read_csv("C:\\Users\\LEE DONGYUN\\Desktop\\데과\\통합 데이터셋.csv", encoding='euc-kr')
+# '자치구명'과 '범죄밀도'를 제외한 나머지 열만 선택
+X_subset = df.drop(['자치구명', '범죄밀도'], axis=1)
+
+# GVA와 조도 평균만 정규화
+columns_to_scale = ['GVA', '조도 평균(lux)']
+scaler = StandardScaler()
+X_subset[columns_to_scale] = scaler.fit_transform(X_subset[columns_to_scale])
+
+# 엘보우 방법
+inertia = []
+K_range = range(1, 11)
+
+for k in K_range:
+    kmeans = KMeans(n_clusters=k, random_state=42)
+    kmeans.fit(X_subset)
+    inertia.append(kmeans.inertia_)
+
+plt.figure(figsize=(8, 5))
+plt.plot(K_range, inertia, marker='o')
+plt.xlabel('Number of clusters (K)')
+plt.ylabel('Inertia')
+plt.title('Elbow Method (범죄밀도 제외, GVA & 조도 평균만 정규화)')
+plt.show()
