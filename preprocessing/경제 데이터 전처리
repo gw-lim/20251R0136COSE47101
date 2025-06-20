@@ -1,0 +1,60 @@
+import pandas as pd
+
+# 파일 경로
+file1_path = "./data/raw/자치구별+경제활동별+지역내총부가가치(기준년가격)(2015년+기준)_20250529004556.csv"
+file2_path = "./data/raw/서울시 상권분석서비스(소득소비-자치구).csv"
+file4_path = "./data/raw/등록인구2021.csv"
+
+# 파일 불러오기
+df_income_expense_gva = pd.read_csv(file1_path, encoding='euc-kr')
+df_income_detail = pd.read_csv(file2_path, encoding='euc-kr')
+df_population = pd.read_csv(file4_path, encoding='ISO-8859-1')
+
+# 1. 2022년 데이터만 필터링
+df_income_detail['기준_년분기_코드'] = df_income_detail['기준_년분기_코드'].astype(str)
+df_income_2022 = df_income_detail[df_income_detail['기준_년분기_코드'].str.startswith("2022")]
+
+#  2. 자치구별 네 분기의 월평균소득 평균 계산
+avg_income_by_gu = df_income_2022.groupby('행정동_코드_명')['월_평균_소득_금액'].mean().reset_index()
+avg_income_by_gu.rename(columns={'행정동_코드_명': '자치구', '월_평균_소득_금액': '월평균소득'}, inplace=True)
+avg_income_by_gu['자치구'] = avg_income_by_gu['자치구'].str.replace('구', '', regex=False)
+
+#  3. 자치구별 지출 총합 계산
+total_expense_by_gu = df_income_2022.groupby('행정동_코드_명')['지출_총금액'].sum().reset_index()
+total_expense_by_gu.rename(columns={'행정동_코드_명': '자치구', '지출_총금액': '지출총금액'}, inplace=True)
+total_expense_by_gu['자치구'] = total_expense_by_gu['자치구'].str.replace('구', '', regex=False)
+
+#  4. GVA 데이터 준비
+gva_data = df_income_expense_gva[['자치구', '총부가가치(2021년 기준)']].copy()
+gva_data.rename(columns={'총부가가치(2021년 기준)': 'GVA'}, inplace=True)
+gva_data['자치구'] = gva_data['자치구'].str.replace('구', '', regex=False)
+
+#  5. 인구 데이터 정리
+# 잘못된 행 제거하고 인구 정수형으로 변환
+df_population_cleaned = df_population.tail(25).reset_index(drop=True)
+districts_ordered = [
+    '종로', '중', '용산', '성동', '광진', '동대문', '중랑', '성북', '강북', '도봉',
+    '노원', '은평', '서대문', '마포', '양천', '강서', '구로', '금천', '영등포', '동작',
+    '관악', '서초', '강남', '송파', '강동'
+]
+df_population_cleaned['자치구'] = districts_ordered
+df_population_cleaned['인구'] = df_population_cleaned['인구'].astype(str).str.replace(",", "").astype(int)
+
+#  6. 병합
+merged = avg_income_by_gu.merge(total_expense_by_gu, on='자치구', how='inner')
+merged = merged.merge(gva_data, on='자치구', how='inner')
+merged = merged.merge(df_population_cleaned, on='자치구', how='inner')
+
+# 7. 1인당 GVA 계산
+merged['1인당GVA'] = (merged['GVA'] / merged['인구']).round().astype(int)
+
+# 8. 소득구간 고정
+merged['소득구간'] = 7
+
+# 9. 자치구명 형식 복구 및 정렬
+merged['자치구'] = merged['자치구'] + '구'
+final_df = merged[['자치구', '월평균소득', '소득구간', '지출총금액', 'GVA', '1인당GVA']]
+final_df = final_df.sort_values(by='자치구').reset_index(drop=True)
+
+#  최종 결과
+print(final_df)
