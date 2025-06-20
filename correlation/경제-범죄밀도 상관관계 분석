@@ -1,0 +1,41 @@
+import pandas as pd
+
+# 1️⃣ 파일 불러오기
+econ_path = "C:\\Users\\LEE DONGYUN\\Desktop\\데과\\경제 통합.csv"
+crime_path = "C:\\Users\\LEE DONGYUN\\Desktop\\데과\\Benchmark_자치구별_면적당강력범죄건수.csv"
+
+# 경제 통합 데이터 (정규화된 값 포함)
+econ_df = pd.read_csv(econ_path, encoding='euc-kr')
+
+# 강력범죄 데이터
+crime_df = pd.read_csv(crime_path, encoding='utf-8-sig', skiprows=2)
+
+# 열 이름 재정의
+crime_df.columns = ['범죄중분류', '자치구', '면적당범죄건수', '면적', '강력범죄 총합', '살인', '강도', '방화', '성폭력',
+                     '폭행', '상해', '협박', '공갈', '약취와 유인', '체포와 감금', '폭력행위1', '폭력행위2']
+
+# 문자열 제거 및 숫자로 변환
+for col in ['강력범죄 총합', '살인', '강도', '방화', '성폭력', '폭행', '상해', '협박', '공갈', '약취와 유인', '체포와 감금', '폭력행위1', '폭력행위2']:
+    crime_df[col] = crime_df[col].astype(str).str.replace(',', '').replace('-', '0').astype(int)
+
+# 자치구 이름 정리
+crime_df['자치구'] = crime_df['자치구'].str.replace('구', '')
+econ_df['자치구'] = econ_df['자치구'].str.replace('구', '')
+
+# 병합
+merged_df = pd.merge(econ_df, crime_df.drop(columns=['범죄중분류', '면적당범죄건수', '면적']), on='자치구', how='inner')
+
+# ✅ 경제통합의 정규화 변수와 강력범죄 변수들
+econ_vars = ['월평균소득', '소득구간', '지출총금액', 'GVA', '1인당GVA']  # 정규화된 변수만
+crime_vars = ['강력범죄 총합', '살인', '강도', '방화', '성폭력', '폭행', '상해', '협박', '공갈', '약취와 유인', '체포와 감금', '폭력행위1', '폭력행위2']
+
+# 상관계수 계산
+corr_matrix = merged_df[econ_vars + crime_vars].corr(method='pearson')
+
+# 경제통합 변수와 강력범죄 변수 간의 상관계수만 추출
+corr_submatrix = corr_matrix.loc[econ_vars, crime_vars]
+
+# 결과 출력
+print("정규화된 경제통합 변수와 강력범죄 변수 간의 상관계수:")
+print(corr_submatrix)
+
