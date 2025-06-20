@@ -1,0 +1,8 @@
+# K=4로 K-means 클러스터링
+k_optimal = 4
+kmeans_final = KMeans(n_clusters=k_optimal, random_state=42)
+df['Cluster_final'] = kmeans_final.fit_predict(X_subset)
+
+for i in range(k_optimal):
+    cluster_members = df[df['Cluster_final'] == i]['자치구명'].tolist()
+    print(f'Cluster {i}: {cluster_members}')
