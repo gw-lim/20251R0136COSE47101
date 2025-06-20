@@ -1,0 +1,27 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.preprocessing import MinMaxScaler
+
+# 한글 폰트 설정
+plt.rcParams['font.family'] = 'Malgun Gothic'  # Windows
+plt.rcParams['axes.unicode_minus'] = False
+
+# 데이터 로드
+df = pd.read_csv("C:\\Users\\LEE DONGYUN\\Desktop\\데과\\경제 통합.csv", encoding='euc-kr')
+print(df.head())
+
+cols_to_normalize = ['월평균소득', '소득구간', '지출총금액', 'GVA', '1인당GVA']
+
+scaler = MinMaxScaler()
+df[cols_to_normalize] = scaler.fit_transform(df[cols_to_normalize])
+
+print("정규화된 데이터:")
+print(df.head())
+
+plt.figure(figsize=(10, 6))
+sns.boxplot(data=df[cols_to_normalize])
+plt.title('정규화된 경제 통합 변수들의 박스플롯')
+plt.xlabel('변수')
+plt.ylabel('정규화된 값 (0~1)')
+plt.show()
